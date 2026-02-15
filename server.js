@@ -10,14 +10,25 @@ const server = app.listen(PORT, () => {
 
 const wss = new WebSocket.Server({ server });
 
+let helmets = {};
+
 wss.on("connection", (ws) => {
-  console.log("Client connected");
 
   ws.on("message", (data) => {
+    const msg = JSON.parse(data);
+
+    helmets[msg.helmetId] = msg;
+
+    const payload = JSON.stringify({
+      type: "update",
+      helmets: helmets
+    });
+
     wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(data.toString());
+        client.send(payload);
       }
     });
   });
+
 });
